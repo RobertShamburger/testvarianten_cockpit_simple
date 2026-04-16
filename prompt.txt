@@ -1,0 +1,161 @@
+{Lies die bereitgestellte CSV-Datei vollständig ein. 
+
+Für jede Zeile führe folgende Schritte aus: 
+
+Prüfe, ob das Feld in der Spalte "Data" gefüllt ist. 
+
+ Falls leer → überspringe diese Zeile. 
+
+ Falls gefüllt → verarbeite die Zeile weiter. 
+
+ Extrahiere aus der zugehörigen Spalte "Action" alle Begriffe, die in Anführungszeichen stehen. 
+
+ Falls mehrere Begriffe vorhanden sind, behandle jeden einzeln. 
+
+ Erstelle eine globale Liste aller extrahierten Begriffe aus der gesamten CSV-Datei und entferne Duplikate, sodass jeder Begriff nur einmal verarbeitet wird. 
+
+ Analysiere den Gesamtkontext der CSV-Datei, um den beschriebenen Geschäftsprozess zu verstehen (z. B. Vertrieb, Einkauf, Produktion etc.). 
+
+ Verwende jeden eindeutigen Begriff als Suchbegriff für eine semantische Suche im SAP Data Dictionary. 
+
+ Ignoriere Transaktionen vollständig (keine T-Codes, keine UI-Bezüge). 
+
+ Ermittle genau eine fachlich am besten passende Tabelle pro Begriff. 
+
+ Ermittle dazu passende Felder aus der gewählten Tabelle, inklusive: 
+
+ Tabellenname 
+
+ Feldname 
+
+ Datenelement 
+
+ Datentyp (z. B. CHAR, NUMC, DATS, DEC etc.) 
+
+ Feldbeschreibung (kurz/lang) 
+
+ Begründung der Zuordnung (inkl. Kontextbezug) 
+
+ Ähnlichkeitsbewertung (falls möglich) 
+
+ Stelle sicher: 
+
+ Innerhalb einer Tabelle jedes Feld nur einmal vorkommt 
+
+ Ermittle zu jedem Feld vorhandene Prüftabellen bzw. Werteprüfungen: 
+
+ Prüfe, ob eine Fremdschlüsselbeziehung (Foreign Key) existiert 
+
+ Bestimme die zugehörige Prüftabelle sowie relevante Schlüsselfelder 
+
+ Falls keine Prüftabelle vorhanden ist, prüfe, ob eine Domäne mit festen Werten existiert 
+
+ Gib die Prüflogik strukturiert aus: 
+
+ Prüftabelle 
+
+ Prüffeld(er) 
+
+ Werteprüfung / Domäne 
+
+ Validiere den Wert aus der Spalte "Data" für jede relevante Zeile gegen den ermittelten Datentyp und ggf. gegen die Prüflogik: 
+
+ Prüfe Format, Länge und Inhalt gemäß Datentyp 
+
+ Falls Prüftabelle vorhanden: prüfe logische Existenz des Werts 
+
+ Falls Domänenwerte vorhanden: prüfe Wertebereich 
+
+ Ergebnis: 
+
+ "Valide" 
+
+ "Nicht valide" 
+
+ Optional: Begründung 
+
+ Weise die gefundenen SAP-Felder wieder den ursprünglichen CSV-Zeilen zu, in denen der jeweilige Begriff vorkam. 
+
+ Falls kein exakter Treffer vorhanden ist, wähle dennoch genau eine bestmögliche Tabelle und die relevantesten Felder basierend auf Kontext und Ähnlichkeit. 
+
+ Globale Konsolidierungsregel (wichtig): 
+
+ Jede Kombination aus Tabellenname + Feldname + Datenelement darf global nur einmal im Ergebnis vorkommen (über alle Begriffe hinweg). 
+
+ Wenn mehrere Begriffe auf dieselbe Kombination führen würden, wird nur ein einziger Eintrag erzeugt. 
+
+ Alle betroffenen Begriffe werden in diesem Fall logisch in einem Eintrag zusammengefasst (keine Duplikate im Output). 
+
+ Gib die Ergebnisse als CSV-Datei aus mit folgenden Spalten (in genau dieser Reihenfolge): 
+
+ Variieren (immer leer lassen) 
+
+ Zeile 
+
+ Begriff 
+
+ Tabelle 
+
+ Feld 
+
+ Datenelement 
+
+ Datentyp 
+
+ Beschreibung 
+
+ Prüftabelle 
+
+ Prüffeld(er) 
+
+ Werteprüfung / Domäne 
+
+ Begründung 
+
+ Ähnlichkeit 
+
+ Data-Wert 
+
+ Validierung 
+
+ Validierungsdetails 
+
+ Stelle sicher: 
+
+ Die Spalte "Variieren" ist in jeder Zeile vorhanden und bleibt immer leer 
+
+ Keine doppelten Einträge durch mehrfach auftretende Begriffe 
+
+ Jede Kombination aus: 
+
+ CSV-Zeile 
+
+ Begriff(en) 
+
+ gefundenem SAP-Feld 
+
+ wird als eine einzige Zeile in der Ergebnis-CSV ausgegeben, sofern sie nicht durch die globale Konsolidierungsregel zusammengeführt wurde. 
+
+Wichtige Anforderungen an die Ausgabe: 
+
+Keine doppelten Auswertungen desselben Begriffs 
+
+ Pro Begriff genau eine Tabelle 
+
+ Keine doppelten Felder innerhalb derselben Tabelle 
+
+ Keine global doppelten Feld–Tabellen–Datenelement-Kombinationen 
+
+ Mehrere Begriffe dürfen nicht zu mehreren Zeilen führen, wenn das SAP-Objekt identisch ist 
+
+ Keine Berücksichtigung von Transaktionen 
+
+ Korrekte Zuordnung zu allen relevanten CSV-Zeilen 
+
+ Sauberes CSV-Format (Trennzeichen konsistent) 
+
+ Textfelder bei Bedarf in Anführungszeichen setzen 
+
+ Nur die CSV-Daten ausgeben, keine zusätzlichen Erklärungen 
+
+CSV-Datei (Input): 
