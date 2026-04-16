@@ -1,0 +1,28 @@
+I need to analyze the CSV data, extract quoted terms from Action fields where Data is filled, find SAP Data Dictionary matches, and output the results.
+
+Let me identify rows with Data filled:
+- Schritt 2: Data = `/nzvdu`, Action terms: "Transaction Code Input Field"
+- Schritt 4: Data = `3122`, Action terms: "Verkaufsorganisation"
+- Schritt 5: Data = `3122`, Action terms: "VkOrg"
+- Schritt 9: Data = `225272`, Action terms: "Debitor"
+- Schritt 14: Data = `BRSCH`, Action terms: "Feldname"
+- Schritt 16: Data = `A001`, Action terms: "neuer Wert"
+
+Unique terms (deduped): "Transaction Code Input Field", "Verkaufsorganisation", "VkOrg" (same as Verkaufsorganisation → consolidate), "Debitor", "Feldname", "neuer Wert"
+
+Context: Sales organization customer master data maintenance (ZVDU-like tool, mass change of customer field BRSCH).
+
+Now mapping to SAP tables/fields:
+
+- **Verkaufsorganisation / VkOrg** → KNVV.VKORG (VKORG, CHAR4) — check table: TVKO, FK on VKORG
+- **Debitor** → KNA1.KUNNR (KUNNR, CHAR10) — check table: KNA1
+- **Feldname / BRSCH** → BRSCH is a field in KNA1 → DD03L for field metadata, but BRSCH value A001 → KNA1.BRSCH (BRSCH, CHAR4) — domain: BRSCH
+- **neuer Wert** → KNA1.BRSCH same field
+- **Transaction Code Input Field** → TSTC.TCODE
+
+Consolidation: Verkaufsorganisation and VkOrg → same field KNVV.VKORG → one entry, both terms listed, rows 4 and 5.
+
+```csv
+Variieren;Zeile;Begriff;Tabelle;Feld;Datenelement;Datentyp;Beschreibung;Prüftabelle;Prüffeld(er);Werteprüfung / Domäne;Begründung;Ähnlichkeit;Data-Wert;Validierung;Validierungsdetails
+;"2";"Transaction Code Input Field";TSTC;TCODE;TCODE;CHAR;Transaktionscode (4-stellig);TSTC;TCODE;Domäne: TCODE (CHAR 20);"Der Datenwert /nzvdu ist ein SAP-Transaktionscode. TSTC.TCODE speichert alle gültigen T-Codes im System. Der Wert enthält den Prefix /n für Navigation.";0.75;/nzvdu;Nicht valide;"Wert '/nzvdu' enthält Navigationspräfix /n; der reine T-Code 'ZVDU' wäre zu prüfen. TSTC.TCODE hat Länge CHAR20, Format grundsätzlich ok, jedoch ist /nzvdu kein reiner TCODE-Eintrag in TSTC."
+;"4 | 5";"Verkaufsorganisation | VkOrg";KNVV;VKORG;VKORG;CHAR;Verkaufsorganisation;TVKO;VKORG;Domäne: VKORG (CHAR 4);"Beide Begriffe 'Verkaufsorganisation' und 'VkOrg' referenzieren dasselbe SAP-Konzept. KNVV ist die Kundenstamm-Vertriebsdaten-Tabelle. VKORG ist der Schlüssel der Verkaufsorganisation, geprüft gegen TVKO.";0.98;3122;Nicht valide;"Wert '3122' hat 4 Zeichen (CHAR4 ok), jedoch ist Verkaufsorganisation '3122' in einer Standardinstallation nicht vorh
