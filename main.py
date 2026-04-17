@@ -18,7 +18,7 @@ def load_env_file(path):
                 key, value = line.split('=', 1)
                 key = key.strip()
                 value = value.strip().strip('"').strip("'")
-                if key and key not in os.environ:
+                if key and value:
                     os.environ[key] = value
     except Exception as e:
         print(f"Fehler beim Laden der .env-Datei '{path}': {e}")
@@ -110,7 +110,7 @@ def main():
 
     csv_file = os.getenv('CSV_FILE', 'process.csv')
     prompt_file = os.getenv('PROMPT_FILE', 'prompt.txt')
-    output_file = os.getenv('OUTPUT_FILE', 'claudeAnalysis.txt')
+    output_file = os.getenv('OUTPUT_FILE', 'claudeAnalysis.csv')
     model = os.getenv('MODEL', 'claude-sonnet-4-6')
 
     print(f"Lese CSV-Datei: {csv_file}")
@@ -137,10 +137,12 @@ def main():
 
 
 def write_analysis_to_file(file_path, claudeAnalysis):
-    """Schreibt die Claude-Antwort in eine Datei."""
+    """Schreibt die Claude-Antwort in eine CSV-Datei."""
     try:
-        with open(file_path, 'w', encoding='utf-8') as file:
-            file.write(claudeAnalysis)
+        with open(file_path, 'w', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            writer.writerow(['Analysis'])
+            writer.writerow([claudeAnalysis])
     except Exception as e:
         print(f"Fehler beim Schreiben der Datei '{file_path}': {e}")
 
