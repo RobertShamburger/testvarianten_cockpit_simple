@@ -2,6 +2,7 @@ import os
 import csv
 import ast
 from pathlib import Path
+from utils import check_file_writable
 
 ENV_FILE = '.env'
 
@@ -23,6 +24,120 @@ def load_env_file(path):
                     os.environ[key] = value
     except Exception as e:
         print(f"Fehler beim Laden der .env-Datei '{path}': {e}")
+
+
+def generate_mock_value(value):
+    """
+    Generiert einen Mock-Wert basierend auf dem Typ des Eingabewerts.
+    """
+    value_str = str(value).strip()
+    
+    # Versuche, den Wert als Zahl zu interpretieren
+    try:
+        # Überprüfe auf Integer
+        if '.' not in value_str:
+            num = int(value_str)
+            return str(num + 1)
+        else:
+            # Überprüfe auf Float
+            num = float(value_str)
+            return str(num + 0.1)
+    except ValueError:
+        pass
+    
+    # Für Strings: Anhängen von "_modified"
+    return f"{value_str}_modified"
+
+
+def extract_replacements_from_claude_analysis(file_path):
+    """
+    Extrahiert die REPLACEMENTS-Struktur aus claudeAnalysis.csv.
+    Filtert Zeilen mit "x" in der "Variieren"-Spalte.
+    Generiert Mock-Werte für Neuer-Wert.
+    Rückgabe: Liste von Tupeln (Zeile, Alt-Wert, Neu-Wert)
+    """
+    replacements = []
+    
+    if not os.path.exists(file_path):
+        print(f"Info: {file_path} nicht gefunden, verwende Fallback aus .env")
+        return replacements
+    
+    try:
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
+            all_content = file.read()
+        
+        # Extrahiere nur den CSV-Teil zwischen ```csv und ```
+        start_marker = '```csv'
+        end_marker = '```'
+        
+        start_idx = all_content.find(start_marker)
+        if start_idx == -1:
+            print(f"Info: Keine CSV-Daten in {file_path} gefunden")
+            return replacements
+        
+        start_idx += len(start_marker)
+        end_idx = all_content.find(end_marker, start_idx)
+        if end_idx == -1:
+            end_idx = len(all_content)
+        
+        csv_content = all_content[start_idx:end_idx].strip()
+        csv_lines = [line.strip() for line in csv_content.split('\n') if line.strip()]
+        
+        if len(csv_lines) < 2:
+            print(f"Info: Keine Datensätze in {file_path}")
+            return replacements
+        
+        # Parse Header
+        header_line = csv_lines[0]
+        headers = [h.strip().strip('"').lower() for h in header_line.split(';')]
+        
+        # Finde Spalten-Indizes
+        variieren_idx = None
+        zeile_idx = None
+        data_wert_idx = None
+        
+        for i, header in enumerate(headers):
+            if 'variieren' in header:
+                variieren_idx = i
+            elif 'zeile' in header:
+                zeile_idx = i
+            elif 'data-wert' in header or 'data_wert' in header:
+                data_wert_idx = i
+        
+        if variieren_idx is None or zeile_idx is None or data_wert_idx is None:
+            print(f"Warnung: Erforderliche Spalten nicht gefunden")
+            return replacements
+        
+        # Verarbeite Datensätze
+        for line_num, line in enumerate(csv_lines[1:], start=2):
+            parts = [p.strip().strip('"') for p in line.split(';')]
+            
+            if variieren_idx < len(parts):
+                variieren_wert = parts[variieren_idx].lower().strip()
+                if variieren_wert == 'x':
+                    if zeile_idx < len(parts) and data_wert_idx < len(parts):
+                        try:
+                            zeile = int(parts[zeile_idx])
+                            alt_wert = parts[data_wert_idx]
+                            neu_wert = generate_mock_value(alt_wert)
+                            
+                            replacements.append((zeile, alt_wert, neu_wert))
+                            print(f"Extrahiert: Zeile {zeile}: '{alt_wert}' -> '{neu_wert}'")
+                        except (ValueError, IndexError) as e:
+                            print(f"Warnung: Fehler bei Zeile {line_num}: {e}")
+        
+        if replacements:
+            print(f"Info: {len(replacements)} Ersetzungen aus {file_path} extrahiert")
+        else:
+            print(f"Info: Keine Zeilen mit 'x' in Variieren-Spalte gefunden")
+        
+        return replacements
+    
+    except Exception as e:
+        print(f"Fehler beim Lesen von {file_path}: {e}")
+        import traceback
+        traceback.print_exc()
+        return replacements
 
 
 def parse_replacements(replacements_str):
@@ -152,22 +267,29 @@ def main():
     load_env_file(ENV_FILE)
     
     input_file = os.getenv('CSV_FILE', 'process.csv')
-    replacements_str = os.getenv('REPLACEMENTS', '')
+    claude_analysis_file = os.getenv('OUTPUT_FILE', 'claudeAnalysis.csv')
     output_file = 'new-process.csv'
     
     if not os.path.exists(input_file):
         print(f"Fehler: Eingabedatei '{input_file}' nicht gefunden.")
         return
     
-    if not replacements_str:
-        print("Fehler: REPLACEMENTS nicht in .env-Datei definiert.")
-        return
-    
     print(f"Lese CSV-Datei: {input_file}")
-    print(f"REPLACEMENTS: {replacements_str}")
     
-    # Parse Replacements
-    replacements = parse_replacements(replacements_str)
+    # Versuche, REPLACEMENTS aus claudeAnalysis.csv zu extrahieren
+    print(f"\nExtrahiere Replacements aus '{claude_analysis_file}'...")
+    replacements = extract_replacements_from_claude_analysis(claude_analysis_file)
+    
+    # Falls keine Replacements extrahiert wurden, verwende Fallback aus .env
+    if not replacements:
+        print("\nVerwende Fallback-REPLACEMENTS aus .env")
+        replacements_str = os.getenv('REPLACEMENTS', '')
+        if replacements_str:
+            replacements = parse_replacements(replacements_str)
+            print(f"REPLACEMENTS aus .env: {replacements_str}")
+        else:
+            print("Fehler: Keine Replacements definiert und claudeAnalysis.csv nicht vorhanden/leer.")
+            return
     
     if not replacements:
         print("Fehler: Keine gültigen Replacements definiert.")
@@ -179,6 +301,12 @@ def main():
     
     # Verarbeite CSV
     print(f"\nVerarbeite CSV...")
+    
+    # Überprüfe, ob die Ausgabedatei beschreibbar ist
+    if not check_file_writable(output_file):
+        print("Verarbeitung wird beendet.")
+        return
+    
     process_csv(input_file, output_file, replacements)
 
 

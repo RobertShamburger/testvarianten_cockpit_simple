@@ -1,6 +1,7 @@
 import os
 import csv
 from anthropic import Anthropic
+from utils import check_file_writable
 
 ENV_FILE = '.env'
 
@@ -130,6 +131,12 @@ def main():
     if claudeAnalysis:
         print("\n--- Antwort von Claude ---")
         print(claudeAnalysis)
+        
+        # Überprüfe, ob die Ausgabedatei beschreibbar ist
+        if not check_file_writable(output_file):
+            print("Verarbeitung wird beendet.")
+            return
+        
         write_analysis_to_file(output_file, claudeAnalysis)
         print(f"Antwort wurde in '{output_file}' geschrieben.")
     else:
