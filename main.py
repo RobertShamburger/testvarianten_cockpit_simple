@@ -148,7 +148,8 @@ def write_analysis_to_file(file_path, claudeAnalysis):
     try:
         with open(file_path, 'w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
-            writer.writerow(['Analysis'])
+            #writer.writerow(['Analysis'])
+            print(f"ClaudeAnalysis: {claudeAnalysis}")
             writer.writerow([claudeAnalysis])
     except Exception as e:
         print(f"Fehler beim Schreiben der Datei '{file_path}': {e}")

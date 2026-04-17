@@ -77,4 +77,4 @@ Keine doppelten Auswertungen desselben Begriffs
  Korrekte Zuordnung zu allen relevanten CSV-Zeilen
  Sauberes CSV-Format (Trennzeichen konsistent)
  Textfelder bei Bedarf in Anführungszeichen setzen
-Antworte ausschließlich mit dem String im CSV-Format, keine zusätzlichen Erklärungen zu den Überlegungen.
+Antworte ausschließlich mit dem String im CSV-Format, keine zusätzlichen Erklärungen zu den Überlegungen und beginne die Rückgabe NICHT mit "```csv"
