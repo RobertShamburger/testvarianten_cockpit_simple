@@ -1,0 +1,20 @@
+Issue Id;Issue key;Test type;Test Summary;Test Priority;Component;Action;Data;Result
+1;;Manual;Process test for process_12;Medium;Visits;Click on the 'Transaction Code Input Field' dropdown to open the list of available transaction codes.;;
+1;;Manual;;;Visits;While holding the Shift key, enter the transaction code /nzvdu into the 'Transaction Code Input Field' in the toolbar to navigate to the specific transaction or function.;/nzvdu;
+1;;Manual;;;Visits;Click on the 'Command Input Field' textfield.;;
+1;;Manual;;;Visits;"Enter the sales organization code 3300 into the ""Verkaufsorganisation"" (Sales Organization) input field.";3300;
+1;;Manual;;;Visits;"Click on the table cell in column ""VkOrg"" (Sales Organization), row 1, with value 3122.";3122;
+1;;Manual;;;Visits;Press the Enter key to confirm the current input or proceed to the next step.;;
+1;;Manual;;;Visits;Click on the 'Customers' link.;;
+1;;Manual;;;Visits;"Click on the ""Debitor"" (customer) text field.";;
+1;;Manual;;;Visits;"Enter the customer number 300000 into the ""Debitor"" field.";300000;
+1;;Manual;;;Visits;"Click on the table cell in column ""SuchBegr"" (Search Term), row 1.";;
+1;;Manual;;;Visits;Click on the 'Org. selection' link.;;
+1;;Manual;;;Visits;Click on the 'Table Name' textfield.;;
+1;;Manual;;;Visits;Click on the 'Field Name' textfield.;;
+1;;Manual;;;Visits;"While holding the Shift key, enter the field name BRSCH into the ""Feldname"" (Field name) input field to specify which data attribute should be updated.";BRSCH;
+1;;Manual;;;Visits;Click on the 'new value' text field.;;
+1;;Manual;;;Visits;While holding the Shift key, enter the new value A001 into the 'neuer Wert' (new value) input field to specify the updated data for the selected table and field.;A001;
+1;;Manual;;;Visits;Click on the 'Test Mode (kein Update)' checkbox to enable it.;;
+1;;Manual;;;Visits;Click on the 'Checkbox Button' to toggle its state.;;
+1;;Manual;;;Visits;Press and hold the 'Shift' key.;;"The expected outcome of this test is the successful validation of a data change for customer ""225272"" in test mode without updating the actual database."
