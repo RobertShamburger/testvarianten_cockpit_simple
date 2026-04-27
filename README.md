@@ -1,12 +1,13 @@
 # Testvarianten Cockpit Simple
 
-Eine Python-Anwendung, die Prozessschritte aus einer CSV-Datei ausliest und mit einem benutzerdefinierten Prompt an die Claude AI-API (Anthropic) sendet.
+Eine Python-Anwendung, die Prozessschritte aus einer CSV-Datei ausliest, mit einem benutzerdefinierten Prompt an die Claude AI-API (Anthropic) sendet und die Antwort in einer CSV-Datei speichert.
 
 ## Funktionalität
 - Liest Prozessschritte aus einer CSV-Datei (`process.csv`)
 - Lädt einen Prompt aus einer Textdatei (`prompt.txt`)
 - Sendet die Daten an Claude AI (Anthropic API)
-- Gibt die KI-generierte Antwort aus und speichert sie in `claudeAnalysis.txt`
+- Gibt die KI-generierte Antwort aus und speichert sie in `claudeAnalysis.csv`
+- Optional: Verarbeitet `claudeAnalysis.csv` mit `process_replacements.py`, um `new-process.csv` zu erzeugen
 
 ## Installation
 1. Python 3.8+ installieren
@@ -28,7 +29,15 @@ Eine Python-Anwendung, die Prozessschritte aus einer CSV-Datei ausliest und mit 
    python main.py
    ```
 4. Die Anwendung liest beide Dateien, kombiniert sie und sendet sie an Claude
-5. Die Antwort von Claude wird zusätzlich in `claudeAnalysis.txt` gespeichert
+5. Die Antwort von Claude wird in `claudeAnalysis.csv` gespeichert
+
+### Optional: Variationen verarbeiten
+1. Führe `process_replacements.py` aus:
+   ```bash
+   python process_replacements.py
+   ```
+2. Das Skript versucht, `REPLACEMENTS` aus `claudeAnalysis.csv` zu extrahieren und schreibt die veränderte CSV in `new-process.csv`
+3. Falls keine Werte aus `claudeAnalysis.csv` extrahiert werden können, kann `REPLACEMENTS` auch in `.env` definiert werden
 
 ## Konfiguration
 Die Datei `.env` kann folgende Werte enthalten:
@@ -38,23 +47,27 @@ Die Datei `.env` kann folgende Werte enthalten:
 - `OUTPUT_FILE`
 - `MODEL`
 - `MAX_TOKENS`
+- `REPLACEMENTS` (optional, für `process_replacements.py`)
 
 ## Dateistruktur
 ```
 .
 ├── main.py              # Hauptskript
+├── process_replacements.py # Skript zur Verarbeitung von Replacements
+├── utils.py             # Hilfsfunktionen
 ├── process.csv          # Eingabe: Prozessschritte (CSV-Format)
 ├── prompt.txt           # Eingabe: Prompt für Claude
-├── claudeAnalysis.txt   # Ausgabe: Claude-Antwort
+├── claudeAnalysis.csv   # Ausgabe: Claude-Antwort
 ├── requirements.txt     # Python-Abhängigkeiten
-└── README.md           # Diese Datei
+└── README.md            # Diese Datei
 ```
 
 ## Abhängigkeiten
-- `anthropic>=0.30.0` - Anthropic (Claude) API Client
-- `requests>=2.25.0` - HTTP-Library
+- `anthropic>=0.30.0`
+- `requests>=2.25.0`
 
 ## Anpassungen
 - Ändere die Werte `CSV_FILE` und `PROMPT_FILE` in der `.env`-Datei, um andere Eingabedateien zu verwenden
-- Passe das `MODEL` in der `.env` oder in `send_to_claude()` an (z. B. `claude-3-opus-20240229` oder `claude-3-haiku-20240307`)
+- Passe das `MODEL` in der `.env` an, z. B. `claude-3-opus-20240229` oder `claude-3-haiku-20240307`
 - Erhöhe `MAX_TOKENS` für längere Antworten
+- Definiere optional `REPLACEMENTS` in `.env`, wenn `process_replacements.py` keine Werte aus `claudeAnalysis.csv` extrahieren kann
